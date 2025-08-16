@@ -8,3 +8,6 @@ frontend/node_modules/
 # build outputs
 frontend/dist/
 backend/build/
+
+# Mongo DB Config
+mongo-db.png
