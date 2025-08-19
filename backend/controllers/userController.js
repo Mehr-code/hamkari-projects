@@ -43,19 +43,13 @@ const getUsers = async (req, res) => {
 // @access  Private
 const getUserById = async (req, res) => {
   try {
+    const user = await User.findById(req.params.id).select("-password");
+    if (!user)
+      return res.status(404).json({ message: "کاربر مورد نظر یافت نشد" });
+    res.json(user);
   } catch (err) {
     res.status(500).json({ message: "خطای داخلی سرور", error: err.message });
   }
 };
 
-// @desc    Delete A User (For Admin Role Only)
-// @route   DELETE /api/users/:id
-// @access  Private
-const deleteUser = async (req, res) => {
-  try {
-  } catch (err) {
-    res.status(500).json({ message: "خطای داخلی سرور", error: err.message });
-  }
-};
-
-module.exports = { getUsers, getUserById, deleteUser };
+module.exports = { getUsers, getUserById };

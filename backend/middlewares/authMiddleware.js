@@ -12,9 +12,7 @@ const protect = async (req, res, next) => {
       req.user = await User.findById(decode.id).select("-password");
       next();
     } else {
-      res
-        .status(401)
-        .json({ message: "کابر شناسایی نشد، هیچ توکنی وجود ندارد" });
+      res.status(401).json({ message: "شما دسترسی ادمینی ندارید." });
     }
   } catch (error) {
     res.status(401).json({ message: "توکن پیدا نشد", error: error.message });
