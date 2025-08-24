@@ -36,7 +36,7 @@ const getTasks = async (req, res) => {
     );
 
     // Status summary count
-    const allTask = await Task.countDocuments(
+    const allTasks = await Task.countDocuments(
       req.user.role === "admin" ? {} : { assignedTo: req.user._id }
     );
 
@@ -61,7 +61,7 @@ const getTasks = async (req, res) => {
     res.json({
       tasks,
       statusSummary: {
-        all: allTask,
+        all: allTasks,
         pendingTasks,
         inProgressTasks,
         completedTasks,
@@ -77,6 +77,13 @@ const getTasks = async (req, res) => {
 // @access  Private
 const getTaskById = async (req, res) => {
   try {
+    const task = await Task.findById(req.params.id).populate(
+      "assignedTo",
+      "name email profileImageUrl"
+    );
+    if (!task)
+      return res.status(404).json({ message: "تسک مورد نظر شما یافت نشد." });
+    res.json(task);
   } catch (err) {
     res.status(500).json({ message: "خطای داخلی سرور", error: err.message });
   }
@@ -94,7 +101,7 @@ const createTask = async (req, res) => {
       dueDate,
       assignedTo,
       attachments,
-      todoChecklist,
+      todoCheckList,
     } = req.body;
 
     if (!Array.isArray(assignedTo))
@@ -109,11 +116,11 @@ const createTask = async (req, res) => {
       dueDate,
       assignedTo,
       createdBy: req.user._id,
-      todoChecklist,
+      todoCheckList,
       attachments,
     });
 
-    res.status(201).json({ message: "ایجاد وظیفه با موفقیت انجام شد.", task });
+    res.status(201).json({ message: "تسک شما با موفقیت ایجاد شد.", task });
   } catch (err) {
     res.status(500).json({ message: "خطای داخلی سرور", error: err.message });
   }
@@ -124,6 +131,27 @@ const createTask = async (req, res) => {
 // @access  Private
 const updateTask = async (req, res) => {
   try {
+    const task = await Task.findById(req.params.id);
+    if (!task)
+      return res.status(404).json({ message: "تسک مورد نظر شما یافت نشد." });
+    task.title = req.body.title || task.title;
+    task.description = req.body.description || task.description;
+    task.priority = req.body.priority || task.priority;
+    task.dueDate = req.body.dueDate || task.dueDate;
+    task.todoCheckList = req.body.todoCheckList || task.todoCheckList;
+    task.attachments = req.body.attachments || task.attachments;
+
+    if (req.body.assignedTo) {
+      if (!Array.isArray(req.body.assignedTo)) {
+        return res.status(400).json({
+          message: "فیلد assignedTo باید آرایه‌ای از شناسه کاربران باشد",
+        });
+      }
+      task.assignedTo = req.body.assignedTo;
+    }
+
+    const updatedTask = await task.save();
+    res.json({ message: "تسک مورد نظر با موفقیت بروزرسانی شد", updatedTask });
   } catch (err) {
     res.status(500).json({ message: "خطای داخلی سرور", error: err.message });
   }
@@ -134,6 +162,13 @@ const updateTask = async (req, res) => {
 // @access  Private (Admin)
 const deleteTask = async (req, res) => {
   try {
+    const task = await Task.findById(req.params.id);
+
+    if (!task)
+      return res.status(404).json({ message: "تسک مورد نظر شما یافت نشد." });
+
+    await task.deleteOne();
+    res.status(200).json({ message: "تسک مورد نظر شما با موفقیت حذف شد." });
   } catch (err) {
     res.status(500).json({ message: "خطای داخلی سرور", error: err.message });
   }
@@ -144,6 +179,27 @@ const deleteTask = async (req, res) => {
 // @access  Private
 const updateTaskStatus = async (req, res) => {
   try {
+    const task = await Task.findById(req.params.id);
+    if (!task)
+      return res.status(404).json({ message: "تسک مورد نظر شما یافت نشد." });
+
+    const isAssgined = task.assignedTo.some(
+      (userId) => userId.toString() === req.user._id.toString()
+    );
+
+    if (!isAssgined && req.user.role !== "admin") {
+      return res.status(403).json({ message: "شما دسترسی ادمین ندارید." });
+    }
+
+    task.status = req.body.status || task.status;
+
+    if (task.status === "Completed") {
+      task.todoCheckList.forEach((item) => (item.completed = true));
+      task.progress = 100;
+    }
+
+    await task.save();
+    res.json({ message: "تسک مورد نظر شما با موفقیت بروزرسانی شد.", task });
   } catch (err) {
     res.status(500).json({ message: "خطای داخلی سرور", error: err.message });
   }
@@ -154,6 +210,41 @@ const updateTaskStatus = async (req, res) => {
 // @access  Private
 const updateTaskChecklist = async (req, res) => {
   try {
+    const { todoCheckList } = req.body;
+    const task = await Task.findById(req.params.id);
+    if (!task)
+      return res.status(404).json({ message: "تسک مورد نظر شما یافت نشد." });
+
+    if (!task.assignedTo.includes(req.user._id) && req.user.role !== "admin") {
+      return res.status(403).json({ message: "شما دسترسی ادمینی ندارید." });
+    }
+
+    task.todoCheckList = todoCheckList; // Replacing With the New Task
+
+    // Auto-update progress based on chcklist completion
+    const completedCount = task.todoCheckList.filter(
+      (item) => item.completed
+    ).length;
+    const totalItems = task.todoCheckList.length;
+    task.progress =
+      totalItems > 0 ? Math.round((completedCount / totalItems) * 100) : 0;
+
+    // Auto-mark task as completed if all items are checked
+    if (task.progress === 100) {
+      task.status = "Completed";
+    } else if (task.progress > 0) {
+      task.status = "In Progress";
+    } else {
+      task.status = "Pending";
+    }
+
+    await task.save();
+    const updatedTask = await Task.findById(req.params.id).populate(
+      "assignedTo",
+      "name email profileImageUrl"
+    );
+
+    res.json({ message: "لیست وظیقه با موفیت بروزرسانی شد", task: updateTask });
   } catch (err) {
     res.status(500).json({ message: "خطای داخلی سرور", error: err.message });
   }
