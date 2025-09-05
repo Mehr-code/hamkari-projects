@@ -1,6 +1,9 @@
 @import url("https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100..900&display=swap");
 
-@import "tailwindcss";
+/* Tailwind v3 */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
   --font-family: "Vazirmatn", "sans-serif";
@@ -19,5 +22,7 @@
 }
 
 .input-box {
-  @apply w-full flex justify-between gap-3 text-sm text-black bg-slate-100/50 rounded px-4 py-3 mb-4 mt-3 border border-slate-200 outline-none;
+  @apply w-full flex justify-between gap-3 text-sm text-black 
+           bg-slate-100/50 rounded px-4 py-3 mb-4 mt-3 
+           border border-slate-200 outline-none;
 }
