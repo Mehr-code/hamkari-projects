@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const { route } = require("../routes/authRoutes");
 
-// Generate JWT
+// Generate JWT token for authentication
 const generateToken = (userId) => {
   return jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: "7d" });
 };
@@ -17,7 +17,7 @@ const registerUser = async (req, res) => {
     const { name, email, password, profileImageUrl, adminInviteToken } =
       req.body;
 
-    // Check Is This User Exist
+    // Check if the user already exists by email
     const userExist = await User.findOne({ email });
     if (userExist) {
       return res
@@ -25,7 +25,7 @@ const registerUser = async (req, res) => {
         .json({ message: "کاربری با این ایمیل قبلاً ثبت‌نام کرده است." });
     }
 
-    // Determine User Role Base Of Token, If True --> Admin , Else --> User
+    // Determine user role based on admin invite token
     let role = "member";
     if (
       adminInviteToken &&
@@ -34,11 +34,11 @@ const registerUser = async (req, res) => {
       role = "admin";
     }
 
-    // Hashing The Password
+    // Hash the password before saving to database
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create A New User
+    // Create a new user document
     const user = await User.create({
       name,
       email,
@@ -47,7 +47,7 @@ const registerUser = async (req, res) => {
       role,
     });
 
-    // Return User Data By JWT
+    // Return user data along with JWT token
     res.status(201).json({
       _id: user._id,
       name: user.name,
@@ -57,6 +57,7 @@ const registerUser = async (req, res) => {
       token: generateToken(user._id),
     });
   } catch (error) {
+    // Internal server error handling
     res.status(500).json({ message: "خطای داخلی سرور", error: error.message });
   }
 };
@@ -68,6 +69,7 @@ const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // Find user by email
     const user = await User.findOne({ email });
 
     if (!user) {
@@ -76,7 +78,7 @@ const loginUser = async (req, res) => {
         .json({ message: "کلمه عبور یا ایمیل وارد شده، نامعتبر است" });
     }
 
-    // Check Password
+    // Compare entered password with hashed password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res
@@ -84,7 +86,7 @@ const loginUser = async (req, res) => {
         .json({ message: "کلمه عبور یا ایمیل وارد شده، نامعتبر است" });
     }
 
-    // Return User Data By JWT
+    // Return user data along with JWT token
     res.json({
       _id: user._id,
       name: user.name,
@@ -94,45 +96,54 @@ const loginUser = async (req, res) => {
       token: generateToken(user._id),
     });
   } catch (error) {
+    // Internal server error handling
     res.status(500).json({ message: "خطای داخلی سرور", error: error.message });
   }
 };
 
-// @desc --> Get A Profile User
-// @route --> POST /api/auth/profile
+// @desc --> Get Profile Information of Logged-in User
+// @route --> GET /api/auth/profile
 // @access --> Private (Requires JWT)
 const getUserInfo = async (req, res) => {
   try {
+    // Find user by ID extracted from JWT
     const user = await User.findById(req.user.id).select("-password");
     if (!user) {
       return res.status(404).json({ message: "کاربری با این مشخصات یافت نشد" });
     }
     res.status(200).json(user);
   } catch (error) {
+    // Internal server error handling
     res.status(500).json({ message: "خطای داخلی سرور", error: error.message });
   }
 };
 
-// @desc --> Update A Profile User
-// @route --> POST /api/auth/profile
+// @desc --> Update Profile Information of Logged-in User
+// @route --> PUT /api/auth/profile
 // @access --> Private (Requires JWT)
 const updateUserInfo = async (req, res) => {
   try {
+    // Find user by ID from JWT
     const user = await User.findById(req.user.id);
 
     if (!user) {
       return res.status(404).json({ message: "کاربری مورد نظر یافت نشد" });
     }
+
+    // Update name and email if provided
     user.name = req.body.name || user.name;
     user.email = req.body.email || user.email;
 
+    // If password provided, hash it
     if (req.body.password) {
       const salt = await bcrypt.genSalt(10);
       user.password = await bcrypt.hash(req.body.password, salt);
     }
 
+    // Save updated user
     const updatedUser = await user.save();
 
+    // Return updated user data along with new JWT
     res.json({
       _id: updatedUser._id,
       name: updatedUser.name,
@@ -141,8 +152,10 @@ const updateUserInfo = async (req, res) => {
       token: generateToken(updatedUser._id),
     });
   } catch (error) {
+    // Internal server error handling
     res.status(500).json({ message: "خطای داخلی سرور", error: error.message });
   }
 };
 
+// Export the controller functions
 module.exports = { registerUser, loginUser, getUserInfo, updateUserInfo };

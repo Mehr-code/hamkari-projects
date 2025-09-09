@@ -1,41 +1,36 @@
 "use client";
 
 import React, { useContext, useState } from "react";
-import AuthLayout from "../../components/layouts/AuthLayout"; // Layout wrapper for authentication pages
-import { validateEmail } from "../../utils/helper"; // Helper function to validate email format
-import ProfileSelector from "../../components/Inputs/ProfileSelector"; // Component to select/upload profile image
-import Input from "../../components/Inputs/Input"; // Reusable input component
+import AuthLayout from "../../components/layouts/AuthLayout";
+import { validateEmail } from "../../utils/helper";
+import ProfileSelector from "../../components/Inputs/ProfileSelector";
+import Input from "../../components/Inputs/Input";
 import { Link, Navigate } from "react-router-dom";
-import axiosInstance from "../../utils/axiosInstance"; // Axios instance with default config
-import { API_PATHS } from "../../utils/apiPaths"; // Object with API endpoint paths
-import { UserContext } from "../../context/userContext"; // Context to manage user state globally
-import { useNavigate } from "react-router-dom"; // Hook to programmatically navigate
-import uploadImage from "../../utils/uploadImage"; // Function to upload image and get URL
-import Swal from "sweetalert2"; // SweetAlert2 for nice alert modals
+import axiosInstance from "../../utils/axiosInstance";
+import { API_PATHS } from "../../utils/apiPaths";
+import { UserContext } from "../../context/userContext";
+import { useNavigate } from "react-router-dom";
+import uploadImage from "../../utils/uploadImage";
+import Swal from "sweetalert2";
 
 const SignUp = () => {
-  // State variables for form inputs
-  const [profile, setProfile] = useState(null); // User profile image
-  const [fullName, setFullName] = useState(""); // Full name input
-  const [email, setEmail] = useState(""); // Email input
-  const [password, setPassword] = useState(""); // Password input
-  const [adminInviteToken, setAdminInviteToken] = useState(""); // Admin invite token input
+  const [profile, setProfile] = useState(null);
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [adminInviteToken, setAdminInviteToken] = useState("");
 
-  const [error, setError] = useState(null); // State for error messages
+  const [error, setError] = useState(null);
 
-  const { updateUser } = useContext(UserContext); // Function to update user context
-  const navigate = useNavigate(); // Function to navigate programmatically
+  const { updateUser } = useContext(UserContext);
+  const navigate = useNavigate();
 
-  // Function to handle actual signup logic
   const handleSignUp = async () => {
     let profileImageUrl = "";
     if (profile) {
-      // Upload profile image if provided
       const imgUploadRes = await uploadImage(profile);
       profileImageUrl = imgUploadRes.imageUrl || "";
     }
-
-    // Send POST request to register user
     const response = await axiosInstance.post(API_PATHS.AUTH.REGISTER, {
       name: fullName,
       email,
@@ -43,68 +38,58 @@ const SignUp = () => {
       profileImageUrl,
       adminInviteToken: adminInviteToken || "",
     });
-
     const { token, role } = response.data;
-
     if (token) {
-      // Save token in localStorage and update user context
       localStorage.setItem("Mehr_token", token);
       updateUser(response.data);
-      // Navigate user based on their role
       role === "admin"
         ? navigate("/admin/dashboard")
         : navigate("/user/dashboard");
     }
   };
-
-  // Function triggered on form submission
   const handleSubmit = async (e) => {
-    e.preventDefault(); // Prevent default form submission behavior
-
-    // Validate full name
+    e.preventDefault();
+    // Validate inputs
     if (!fullName) {
       setError("لطفا نام و نام خوانوادگی خود را وارد کنید.");
-      setTimeout(() => setError(""), 4000); // Clear error after 4 seconds
+      setTimeout(() => setError(""), 4000);
       return;
     }
-
-    // Validate email
     if (!validateEmail(email)) {
       setError("لطفا یک آدرس ایمیل معتبر وارد کنید.");
       setTimeout(() => setError(""), 4000);
       return;
     }
 
-    // Validate password
     if (!password) {
       setError("لطفا رمز عبور خود را وارد کنید.");
       setTimeout(() => setError(""), 4000);
       return;
     }
 
-    // Check if admin invite token is missing
+    // Check token
     if (!adminInviteToken) {
       Swal.fire({
         title: "توکن دعوت مدیر وارد نشده است",
         text: "در صورت نداشتن توکن، می‌توانید فرآیند ثبت‌نام را بدون آن ادامه دهید یا عملیات را لغو نمایید.",
         icon: "warning",
         showCancelButton: true,
-        confirmButtonText: "ادامه بدون توکن", // Text for confirm button
-        cancelButtonText: "لغو", // Text for cancel button
-        confirmButtonColor: "#1368ec", // Primary project color
-        cancelButtonColor: "#64748b", // Gray color for cancel button
-        background: "#fcfbfc", // Background matching project
-        color: "#1e293b", // Text color
+        confirmButtonText: "ادامه بدون توکن",
+        cancelButtonText: "لغو",
+        confirmButtonColor: "#1368ec", // رنگ اصلی پروژه (primary-color)
+        cancelButtonColor: "#64748b", // خاکستری متناسب با bg-slate-200
+        background: "#fcfbfc", // هم‌رنگ پس‌زمینه پروژه
+        color: "#1e293b", // رنگ متن (text-slate-800 / نزدیک مشکی)
       })
         .then((result) => {
           if (result.isConfirmed) {
-            handleSignUp(); // Proceed with signup if user confirms
+            handleSignUp();
           }
         })
         .then(async (result) => {
           if (result.isConfirmed) {
             try {
-              await handleSignUp(); // Additional safeguard for async signup
+              await handleSignUp();
             } catch (err) {
               setError(
                 err.response?.data?.message ||
@@ -113,10 +98,10 @@ const SignUp = () => {
             }
           }
         });
-      return; // Stop further execution if token is missing
+      return;
     }
 
-    // Direct signup if all validations pass
+    // Submit directly
     try {
       await handleSignUp();
     } catch (err) {
@@ -134,19 +119,16 @@ const SignUp = () => {
           لطفا اطلاعات مورد نیاز را برای عضو شدن پر کنید
         </p>
 
-        {/* Signup form */}
         <form onSubmit={handleSubmit}>
           <ProfileSelector image={profile} setImage={setProfile} />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ">
-            {/* Full name input */}
             <Input
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               label="نام و نام خوانوادگی"
-              placeholder="کیمیا رضایی"
+              placeholder="کیمیا پارسا"
               type="text"
             />
-            {/* Email input */}
             <Input
               type="email"
               value={email}
@@ -154,7 +136,6 @@ const SignUp = () => {
               label="آدرس ایمیل"
               placeholder="ariya@gmail.com"
             />
-            {/* Password input */}
             <Input
               type="password"
               value={password}
@@ -162,7 +143,6 @@ const SignUp = () => {
               label="رمز ورود"
               placeholder="حداقل ۸ کارکتر"
             />
-            {/* Admin invite token input */}
             <Input
               type="text"
               value={adminInviteToken}
@@ -171,20 +151,14 @@ const SignUp = () => {
               placeholder="عدد 6 رقمی"
             />
           </div>
-
-          {/* Display error messages */}
           {error && (
             <p className="text-red-600 font-semibold text-sm pb-2.5 animate-shake">
               {error}
             </p>
           )}
-
-          {/* Submit button */}
           <button type="submit" className="btn-primary">
             عضو شدن
           </button>
-
-          {/* Link to login page */}
           <p className="text-[13px] text-slate-800 mt-3">
             حساب کاربری دارید؟{" "}
             <Link className="font-medium text-primary underline" to="/login">
