@@ -53,3 +53,7 @@
 .animate-shake {
   animation: shakeX 0.5s ease-in-out;
 }
+
+.card {
+  @apply bg-white p-6 rounded-2xl shadow-md shadow-gray-200 border-gray-200/50;
+}

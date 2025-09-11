@@ -10,7 +10,7 @@ import SignUp from "./pages/Auth/SignUp";
 
 import PrivateRoute from "./routes/PrivateRoute";
 
-import DashBoard from "./pages/Admin/DashBoard";
+import Dashboard from "./pages/Admin/Dashboard";
 import ManageTasks from "./pages/Admin/ManageTasks";
 import CreateTask from "./pages/Admin/CreateTasks";
 import ManageUsers from "./pages/Admin/ManageUsers"; // ✅ fixed typo in import path
@@ -35,7 +35,7 @@ const App = () => {
 
           {/* Protected admin routes */}
           <Route element={<PrivateRoute allowedRoles={["admin"]} />}>
-            <Route path="/admin/dashboard" element={<DashBoard />} />
+            <Route path="/admin/dashboard" element={<Dashboard />} />
             <Route path="/admin/tasks" element={<ManageTasks />} />
             <Route path="/admin/create-task" element={<CreateTask />} />
             <Route path="/admin/manage-users" element={<ManageUsers />} />

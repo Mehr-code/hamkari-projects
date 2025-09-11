@@ -1,15 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import SideMenu from "./SideMenu";
 import { HiOutlineX, HiOutlineMenu } from "react-icons/hi";
+import { UserContext } from "../../context/userContext";
 
 function Navbar({ activeMenu }) {
-  const [openSideMenu, setOpenSideMenu] = useState(true);
+  const [openSideMenu, setOpenSideMenu] = useState(false);
+  const { user } = useContext(UserContext);
   return (
     <div className="flex gap-5 bg-white border border-b border-gray-200/50 backdrop-blur-[2px] py-4 px-7 sticky top-0 z-30">
       <button
         className="block lg:hidden text-black"
         onClick={() => {
-          setOpenSideMenu(!openSideMenu);
+          setOpenSideMenu((prev) => !prev);
         }}
       >
         {openSideMenu ? (
@@ -19,7 +21,7 @@ function Navbar({ activeMenu }) {
         )}
       </button>
       <h2 className="text-lg font-medium text-black">Expense Tracker</h2>
-      {openSideMenu && (
+      {openSideMenu && user && (
         <div className="fixed top-[61px] -ml-4 bg-white">
           <SideMenu activeMenu={activeMenu} />
         </div>

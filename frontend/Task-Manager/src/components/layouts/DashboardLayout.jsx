@@ -13,7 +13,7 @@ function DashboardLayout({ children, activeMenu }) {
 
       {user && (
         <div className="flex">
-          <div className="max-[1000px]:hidden">
+          <div className="hidden lg:block">
             {/* Render side menu */}
             <SideMenu activeMenu={activeMenu} />
           </div>
