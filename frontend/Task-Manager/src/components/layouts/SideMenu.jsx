@@ -78,8 +78,8 @@ function SideMenu({ activeMenu }) {
           onClick={() => handleClick(item.path)} // handle navigation
           className={`w-full flex items-center gap-4 text-[15px] ${
             // Highlight active menu item with gradient and border
-            activeMenu?.toLowerCase().trim() === item.label.toLowerCase().trim()
-              ? "text-primary bg-gradient-to-l from-blue-50/40 to-blue-100/50 border-l-[3px]"
+            activeMenu?.toLowerCase().trim() === item.path.toLowerCase().trim()
+              ? "text-primary font-semibold bg-blue-50 border-r-[5px] border-primary"
               : ""
           } py-3 px-6 mb-3 cursor-pointer`}
         >

@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const path = require("path");
 const connectToDB = require("./config/db");
+const healthDbRouter = require("./routes/healthDB.js");
 
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
@@ -22,6 +23,7 @@ app.use(
 
 // Database conection
 connectToDB();
+app.use("/healthDB", healthDbRouter);
 
 // Middleware
 app.use(express.json());

@@ -29,3 +29,13 @@ export const addThousandsSeparator = (num) => {
     ? `${formattedInteger}.${fractionalPart}`
     : formattedInteger;
 };
+
+/**
+ * Convert English numbers to Persian numbers
+ * Example: 1234 -> ۱۲۳۴
+ */
+export const toPersianDigits = (num) => {
+  if (num == null) return "";
+  const persianDigits = "۰۱۲۳۴۵۶۷۸۹";
+  return num.toString().replace(/\d/g, (d) => persianDigits[d]);
+};
