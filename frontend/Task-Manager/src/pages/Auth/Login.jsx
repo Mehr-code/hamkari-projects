@@ -59,12 +59,22 @@ const Login = () => {
         else navigate("/user/dashboard");
       }
     } catch (err) {
-      // Handle API errors
-      if (err.response && err.response.data.message) {
+      // اگر بک‌اند گفت کاربر وجود نداره
+      if (err.response && err.response.status === 404) {
+        setError("کاربری با این مشخصات یافت نشد.");
+      }
+      // اگر رمز اشتباه بود
+      else if (err.response && err.response.status === 401) {
+        setError("ایمیل یا رمز عبور اشتباه است.");
+      }
+      // بقیه خطاها
+      else if (err.response && err.response.data.message) {
         setError(err.response.data.message);
       } else {
         setError("خطایی رخ داد. لطفا دوباره تلاش کنید.");
       }
+
+      setTimeout(() => setError(""), 4000);
     }
   };
 

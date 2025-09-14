@@ -65,9 +65,9 @@ export const SIDE__MENU_USER_DATA = [
 
 // Priority options for tasks
 export const PRIORITY_DATA = [
-  { label: "Low", value: "Low" },
-  { label: "Medium", value: "Medium" },
-  { label: "High", value: "High" },
+  { label: "پایین", value: "Low" },
+  { label: "متوسط", value: "Medium" },
+  { label: "بالا", value: "High" },
 ];
 
 // Status options for tasks

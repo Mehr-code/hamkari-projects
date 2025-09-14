@@ -1,9 +1,7 @@
-// validateEmail function checks if the provided string is a valid email format
+// validateEmail function for common real-world email addresses
 export const validateEmail = (email) => {
-  // Regular expression to match basic email pattern: something@something.something
-  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-  // Returns true if email matches the regex, false otherwise
+  // Basic pattern: something@something.something (letters, numbers, dots, dashes allowed)
+  const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   return regex.test(email);
 };
 

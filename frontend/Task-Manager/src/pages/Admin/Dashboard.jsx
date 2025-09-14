@@ -28,7 +28,7 @@ const DashBoard = () => {
   const [barChartData, setBarChartData] = useState([]);
 
   // State for loading and error handling
-  const [loading, setLoading] = useState(true);
+  const [_, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   // Configure moment-jalaali for Persian with Persian digits

@@ -58,7 +58,7 @@ axiosInstance.interceptors.response.use(
   (error) => {
     if (error.response) {
       const status = error.response.status;
-      if (status === 401) {
+      if (status === 401 && window.location.pathname !== "/login") {
         // Only logout on real unauthorized
         console.warn("دسترسی غیرمجاز! در حال انتقال به صفحه ورود...");
         window.location.href = "/login";

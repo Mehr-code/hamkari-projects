@@ -88,6 +88,7 @@ function CustomBarChart({ data = [] }) {
             tick={{ fontSize: 14, fill: "#555" }}
             stroke="none"
             tickFormatter={(value) => toPersianDigits(value)}
+            dx={-30}
           />
 
           {/* Custom tooltip */}

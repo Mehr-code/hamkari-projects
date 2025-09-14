@@ -74,7 +74,7 @@ function TaskListTable({ tableData }) {
               الویت
             </th>
             <th className="py-3 px-6 text-gray-800 font-medium text-[13px] hidden md:table-cell">
-              تاریخ انتشار
+              تاریخ سر رسید
             </th>
           </tr>
         </thead>
