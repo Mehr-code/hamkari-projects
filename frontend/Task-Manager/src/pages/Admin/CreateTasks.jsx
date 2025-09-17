@@ -1,5 +1,5 @@
 // React core
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 
 // Layouts
 import DashboardLayout from "../../components/layouts/DashboardLayout";
@@ -32,9 +32,14 @@ import TodoListInput from "../../components/Inputs/TodoListInput";
 import AddAttachmentsInput from "../../components/Inputs/AddAtachttmentsInput";
 
 // Date picker
-import DatePicker, { Calendar } from "react-multi-date-picker";
+import DatePicker, { Calendar, DateObject } from "react-multi-date-picker";
 import persian from "react-date-object/calendars/persian"; // Persian calendar
 import persian_fa from "react-date-object/locales/persian_fa"; // Persian locale for the date picker
+
+import { convertFaMiladiToJalali } from "../../utils/helper";
+
+// Notifications / alerts
+import Swal from "sweetalert2"; // SweetAlert2 for nice alerts
 
 function toEnglishDigits(str) {
   return str.replace(/[۰-۹]/g, (d) => "۰۱۲۳۴۵۶۷۸۹".indexOf(d));
@@ -189,7 +194,62 @@ const CreateTasks = () => {
   };
 
   // Fetch task details by ID (when editing)
-  const getTaskDetailsById = async () => {};
+  const getTaskDetailsById = useCallback(async () => {
+    try {
+      // Show loading modal
+      Swal.fire({
+        title: "در حال بارگذاری وطیفه مورد نظر...",
+        html: "لطفاً صبر کنید...",
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading(),
+      });
+
+      const response = await axiosInstance.get(
+        API_PATHS.TASKS.GET_TASK_BY_ID(taskId)
+      );
+
+      if (response.data) {
+        const taskInfo = response.data;
+        setCurrentTask(taskInfo);
+
+        setTaskData((prevState) => ({
+          ...prevState,
+          title: taskInfo.title,
+          description: taskInfo.description,
+          priority: taskInfo.priority,
+          dueDate: taskInfo.dueDate
+            ? new DateObject({
+                date: convertFaMiladiToJalali(taskInfo.dueDate),
+                calendar: persian,
+                locale: persian_fa,
+              })
+            : null,
+          assignedTo: taskInfo.assignedTo?.map((member) => member?._id) || null,
+          todoChecklist:
+            taskInfo.todoChecklist?.map((task) => task?.text) || null,
+          attachments: taskInfo?.attachments || [],
+        }));
+      }
+    } catch (err) {
+      console.error("خطا در دریافت اطلاعات وظیفه خواسته شده", err);
+      Swal.fire({
+        icon: "error",
+        title: "خطا!",
+        text: "خطا در دریافت اطلاعات وظیفه مورد نظر",
+      });
+    } finally {
+      // Always close loading modal
+      Swal.close();
+    }
+  }, [taskId]);
+
+  const deleteTask = async () => {};
+
+  useEffect(() => {
+    if (taskId) {
+      getTaskDetailsById();
+    }
+  }, [getTaskDetailsById, taskId]);
 
   return (
     <DashboardLayout activeMenu="/admin/create-task">
@@ -208,8 +268,8 @@ const CreateTasks = () => {
                   className="flex items-center gap-1.5 text-[13px] font-medium text-rose-500 bg-rose-50 rounded px-2 py-1 border-rose-100 hover:border-rose-300 cursor-pointer"
                   onClick={() => setOpenDeleteAlert(true)}
                 >
-                  <LuTrash2 className="text-base" />
                   حذف
+                  <LuTrash2 className="text-base" />
                 </button>
               )}
             </div>

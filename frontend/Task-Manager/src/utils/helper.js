@@ -1,6 +1,10 @@
 // helpers/dateHelpers.js
 import moment from "moment-jalaali";
 
+import DateObject from "react-date-object";
+import persian from "react-date-object/calendars/persian";
+import persian_fa from "react-date-object/locales/persian_fa";
+
 // validateEmail function for common real-world email addresses
 export const validateEmail = (email) => {
   // Basic pattern: something@something.something (letters, numbers, dots, dashes allowed)
@@ -41,7 +45,27 @@ export const toPersianDigits = (num) => {
   return num.toString().replace(/\d/g, (d) => persianDigits[d]);
 };
 
+/**
+ * Convert Persian/Jalali date (from react-multi-date-picker DateObject or 'jYYYY/jMM/jDD' string)
+ * into a *date-only* Gregorian string "YYYY-MM-DD".
+ * Recommended: send this to backend for dueDate.
+ */
+export function jalaliToDateOnlyISO(value) {
+  if (!value) return null;
 
+  // Normalize Persian digits to english digits (if needed)
+  const persianToEnglishDigits = (s) => {
+    if (!s) return s;
+    const persian = ["۰", "۱", "۲", "۳", "۴", "۵", "۶", "۷", "۸", "۹"];
+    const arabic = ["٠", "١", "٢", "٣", "٤", "٥", "٦", "٧", "٨", "٩"];
+    return s.replace(/[۰-۹٠-٩]/g, (ch) => {
+      const p = persian.indexOf(ch);
+      if (p !== -1) return String(p);
+      const a = arabic.indexOf(ch);
+      if (a !== -1) return String(a);
+      return ch;
+    });
+  };
 
   // 1) If value is DateObject from react-multi-date-picker (has .format)
   if (typeof value === "object" && typeof value.format === "function") {
@@ -100,4 +124,36 @@ export function gregorianToJalaliDisplay(
   // moment.loadPersian({ dialect: "persian-modern", usePersianDigits: true });
   const fmt = withWeekday ? "dddd، jD jMMMM jYYYY" : "jD jMMMM jYYYY";
   return m.locale("fa").format(fmt);
+}
+
+export function convertFaMiladiToJalali(faMiladiStr, asObject = false) {
+  if (!faMiladiStr) return null;
+
+  // تبدیل اعداد فارسی به انگلیسی
+  const map = {
+    "۰": "0",
+    "۱": "1",
+    "۲": "2",
+    "۳": "3",
+    "۴": "4",
+    "۵": "5",
+    "۶": "6",
+    "۷": "7",
+    "۸": "8",
+    "۹": "9",
+  };
+  const englishStr = faMiladiStr.replace(/[۰-۹]/g, (w) => map[w]);
+
+  // ساخت شیء Date واقعی از رشته میلادی
+  const date = new Date(englishStr);
+
+  // ساخت DateObject جلالی واقعی
+  const jalaliDate = new DateObject({
+    date,
+    calendar: persian,
+    locale: persian_fa,
+  });
+
+  // خروجی
+  return asObject ? jalaliDate : jalaliDate.format("YYYY/MM/DD");
 }

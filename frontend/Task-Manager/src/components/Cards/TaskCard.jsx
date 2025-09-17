@@ -4,15 +4,12 @@ import AvatarGroup from "../AvatarGroup";
 import { LuPaperclip } from "react-icons/lu";
 import { toPersianDigits } from "../../utils/helper";
 
-// Date handling
-import moment from "moment-jalaali"; // Moment.js with Jalaali calendar
-import "moment/locale/fa"; // Set Persian locale
+// Date handling (Moment with Jalaali support)
+import moment from "moment-jalaali";
+import "moment/locale/fa";
 
 // Configure moment-jalaali for Persian with Persian digits
 moment.loadPersian({ dialect: "persian-modern", usePersianDigits: true });
-// Example output: سه‌شنبه، ۲۰ شهریور ۱۴۰۴
-
-import { gregorianToJalaliDisplay } from "../../utils/helper";
 
 function TaskCard({
   title,
@@ -28,6 +25,7 @@ function TaskCard({
   todoChecklist,
   onClick,
 }) {
+  // Return style classes for status tag
   const getStatusTagColor = () => {
     switch (status) {
       case "Pending":
@@ -41,6 +39,7 @@ function TaskCard({
     }
   };
 
+  // Return style classes for priority tag
   const getPriorityTagColor = () => {
     switch (priority) {
       case "Low":
@@ -54,26 +53,27 @@ function TaskCard({
     }
   };
 
+  // Translations for status
   const statusTranslations = {
     Pending: "بدون شروع",
     "In Progress": "در حال پیشرفت",
     Completed: "تکمیل شده",
   };
 
+  // Translations for priority
   const priorityTranslations = {
     Low: "پایین",
     Medium: "متوسط",
     High: "بالا",
   };
 
-  // Configure moment-jalaali for Persian with Persian digits
-  moment.loadPersian({ dialect: "persian-modern", usePersianDigits: true });
-  // Example output: سه‌شنبه، ۲۰ شهریور ۱۴۰۴
-  moment(dueDate).local().locale("fa").format("dddd، jD jMMMM jYYYY"); // سه‌شنبه، ۲۰ شهریور ۱۴۰۴
-
   return (
-    <div className="bg-white rounded-xl" onClick={onClick}>
-      <div className="">
+    <div
+      className="bg-white rounded-xl py-4 shadow-md shadow-gray-200 border border-gray-200/75 cursor-pointer"
+      onClick={onClick}
+    >
+      {/* Status and Priority tags */}
+      <div className="flex items-start gap-3 px-4">
         <div
           className={`text-[11px] font-medium ${getStatusTagColor()} px-4 py-0.5 rounded`}
         >
@@ -85,6 +85,8 @@ function TaskCard({
           {`الویت ${priorityTranslations[priority] || priority}`}
         </div>
       </div>
+
+      {/* Main content */}
       <div
         className={`px-4 border-r-[3px] ${
           status === "Completed"
@@ -94,11 +96,20 @@ function TaskCard({
             : "border-[#8D51FF]"
         }`}
       >
-        <p className="">{title}</p>
-        <p className="">{description}</p>
-        <p className="">
+        {/* Title */}
+        <p className="text-base font-medium text-gray-800 mt-4 line-clamp-2">
+          {title}
+        </p>
+
+        {/* Description */}
+        <p className="text-sm text-gray-500 mt-1.5 line-clamp-2 leading-[18px]">
+          {description}
+        </p>
+
+        {/* Completed subtasks */}
+        <p className="text-[14px] text-gray-700/100 font-medium mt-2 mb-2 leading-[18px]">
           ریز وظیفه های انجام شده:{" "}
-          <span className="">
+          <span className="font-semibold text-gray-700">
             {completedTodoCount != null && todoChecklist != null
               ? `${toPersianDigits(todoChecklist)} / ${toPersianDigits(
                   completedTodoCount
@@ -106,40 +117,42 @@ function TaskCard({
               : 0}
           </span>
         </p>
+
+        {/* Progress bar */}
         <Progress progress={progress} status={status} />
       </div>
 
-      <div className="">
-        <div className="">
+      {/* Footer section */}
+      <div className="px-4">
+        {/* Dates */}
+        <div className="flex items-center justify-between my-1">
           <div>
-            <label className="">تاریخ شروع</label>
-            <p className="">
+            <label className="text-xs text-gray-500">تاریخ شروع</label>
+            <p className="text-[13px] font-medium text-gray-900">
               {createdAt
-                ? moment(createdAt).locale("fa").format("jD jMMMM jYYYY") // e.g., ۲۰ شهریور ۱۴۰۴
+                ? moment(createdAt).locale("fa").format("jD jMMMM jYYYY")
                 : "بدون تاریخ"}
-              {/* {createdAt
-                ? gregorianToJalaliDisplay(createdAt, { withWeekday: true })
-                : "بدون تاریخ"} */}
             </p>
           </div>
-          <div className="">
-            <label className="">تاریخ سر رسید</label>
-            <p className="">
+          <div>
+            <label className="text-xs text-gray-500">تاریخ سر رسید</label>
+            <p className="text-[13px] font-medium text-gray-900">
               {dueDate
-                ? moment(dueDate).locale("fa").format("jD jMMMM jYYYY") // e.g., ۲۰ شهریور ۱۴۰۴
+                ? moment(dueDate).locale("fa").format("jD jMMMM jYYYY")
                 : "بدون تاریخ"}
-
-              {/* {dueDate ? gregorianToJalaliDisplay(dueDate) : "بدون تاریخ"} */}
             </p>
           </div>
         </div>
-        <div className="">
-          <AvatarGroup avatars={assignedTo || {}} />
 
+        {/* Avatars and attachments */}
+        <div className="flex items-center justify-between mt-3">
+          <AvatarGroup avatars={assignedTo || []} />
           {attachmentCount > 0 && (
-            <div className="">
-              <span className="">{attachmentCount}</span>
-              <LuPaperclip className="" />
+            <div className="flex items-center gap-2 bg-blue-100 px-2.5 py-1.5 rounded-lg">
+              <span className="text-sm text-gray-900">
+                {toPersianDigits(attachmentCount)}
+              </span>
+              <LuPaperclip className="text-primary" />
             </div>
           )}
         </div>

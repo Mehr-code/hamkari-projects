@@ -3,6 +3,7 @@ import DashboardLayout from "../../components/layouts/DashboardLayout";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../utils/axiosInstance";
 import { API_PATHS } from "../../utils/apiPaths";
+
 // Notifications / alerts
 import Swal from "sweetalert2"; // SweetAlert2 for nice alerts
 
@@ -35,7 +36,7 @@ const ManageTasks = () => {
     try {
       // Show loading modal
       Swal.fire({
-        title: "در حال بارگذاری تسک‌ها...",
+        title: "در حال بارگذاری وظایف...",
         html: "لطفاً صبر کنید...",
         allowOutsideClick: false,
         didOpen: () => Swal.showLoading(),
@@ -62,17 +63,21 @@ const ManageTasks = () => {
       setTabs(statusArray);
     } catch (err) {
       // Error handling
-      console.error("Error while fetching tasks:", err);
+      console.error("خطا در دریافت اطلاعات وظایف", err);
       Swal.fire({
         icon: "error",
-        title: "Error!",
-        text: "Failed to load tasks.",
+        title: "خطا!",
+        text: "خطا در دریافت اطلاعات وظایف",
       });
     } finally {
       // Always close loading modal
       Swal.close();
     }
   }, [filterStatus]);
+
+  const handleClick = (taskData) => {
+    navigate(`/admin/create-task`, { state: { taskId: taskData._id } });
+  };
 
   // Fetch tasks whenever user is available or filter changes
   useEffect(() => {
@@ -120,7 +125,7 @@ const ManageTasks = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
           {allTasks.map((item, id) => (
             <TaskCard
-              key={"TaskCard" + item._id}
+              key={`TaskCard ${id}`}
               title={item.title}
               description={item.description}
               priority={item.priority}
@@ -128,9 +133,10 @@ const ManageTasks = () => {
               progress={item.progress}
               createdAt={item.createdAt}
               dueDate={item.dueDate}
-              assignedTo={item.assignedTo?.map(
-                (person) => person.profileImageUrl
-              )}
+              assignedTo={item.assignedTo?.map((person) => [
+                person.profileImageUrl,
+                person.name,
+              ])}
               attachmentCount={item.attachments?.length || 0}
               completedTodoCount={item.completedTodoCount || 0}
               todoChecklist={item.todoCheckList.length || 0}
