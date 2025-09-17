@@ -67,37 +67,44 @@ function SelectUsers({ selectedUsers, setSelectedUsers }) {
   }, [isModalOpen, selectedUsers]);
 
   return (
-    <div className="space-y-3 mt-2">
+    <div className="space-y-3 mt-2  flex md:justify-around">
       {/* If no users selected, show add button */}
       {selectedUserAvatars.length === 0 ? (
-        <button className="card-btn" onClick={() => setIsModalOpen(true)}>
+        <button
+          className="card-btn text-nowrap"
+          onClick={() => setIsModalOpen(true)}
+        >
           اضافه کردن کاربر
           <LuUsers className="text-sm" />
         </button>
       ) : (
         <div className="flex items-center gap-2">
           {/* Display selected user avatars with a maximum of 3 */}
-          <div className="flex flex-row-reverse">
-            {selectedUserAvatars.slice(0, 3).map((avatar, i) => (
-              <img
-                key={i}
-                src={avatar}
-                alt="user"
-                className={`w-9 h-9 rounded-full border-[2px] border-white ${
-                  i !== 0 ? "-mr-2" : "-mr-2"
-                }`}
-              />
-            ))}
+          <div className="flex flex-row">
             {/* If more than 3 users selected, show counter */}
             {selectedUserAvatars.length > 3 && (
-              <div className="-mr-2 w-9 h-9 rounded-full bg-gray-300 flex items-center justify-center text-xs text-gray-700 border border-white">
+              <div className="-mr-2 w-9 h-9 rounded-full bg-primary text-white flex items-center justify-center text-base border border-white">
                 {toPersianDigits(selectedUserAvatars.length - 3)}+
               </div>
             )}
+
+            {selectedUserAvatars
+              .slice(0, 3)
+              .reverse()
+              .map((avatar, i) => (
+                <img
+                  key={i}
+                  src={avatar}
+                  alt="user"
+                  className={`w-9 h-9 rounded-full border-[2px] border-white ${
+                    i !== 0 ? "-mr-2" : "-mr-2"
+                  }`}
+                />
+              ))}
           </div>
           {/* Button to open modal and change users */}
           <button
-            className="card-btn text-sm"
+            className="card-btn text-sm text-nowrap"
             onClick={() => setIsModalOpen(true)}
           >
             تغییر کاربران
@@ -121,7 +128,12 @@ function SelectUsers({ selectedUsers, setSelectedUsers }) {
             allUsers.map((user) => (
               <div
                 key={user._id}
-                className="flex items-center gap-4 p-3 border-b border-gray-300"
+                className="flex items-center gap-4 p-3 border-b border-gray-300 cursor-pointer"
+                onClick={(e) => {
+                  if (e.target.type !== "checkbox") {
+                    toggleUserSelection(user._id);
+                  }
+                }}
               >
                 {/* User avatar */}
                 <img

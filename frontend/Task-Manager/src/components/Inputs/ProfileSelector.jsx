@@ -2,28 +2,33 @@ import React, { useRef, useState } from "react";
 import { LuUser, LuUpload, LuTrash } from "react-icons/lu";
 
 function ProfileSelector({ image, setImage }) {
-  const inputRef = useRef(null);
-  const [previewUrl, setPreviewUrl] = useState(null);
+  const inputRef = useRef(null); // Reference to the hidden file input
+  const [previewUrl, setPreviewUrl] = useState(null); // Local state for image preview URL
 
+  // Handle file input change
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setImage(file);
-      const preview = URL.createObjectURL(file);
+      setImage(file); // Save file in parent state
+      const preview = URL.createObjectURL(file); // Create preview URL
       setPreviewUrl(preview);
     }
   };
 
+  // Remove selected image
   const handleRemoveImage = () => {
     setImage(null);
     setPreviewUrl(null);
   };
 
+  // Trigger hidden file input when clicking the button
   const onChooseFile = () => {
     inputRef.current.click();
   };
+
   return (
     <div className="flex justify-center mb-6 ">
+      {/* Hidden file input */}
       <input
         type="file"
         accept="images/*"
@@ -31,6 +36,8 @@ function ProfileSelector({ image, setImage }) {
         onChange={handleImageChange}
         className="hidden"
       />
+
+      {/* If no image is selected, show default avatar with upload button */}
       {!image ? (
         <div className="w-20 h-20 flex items-center justify-center bg-blue-100/50 rounded-full relative cursor-pointer">
           <LuUser className="text-4xl text-primary" />
@@ -43,6 +50,7 @@ function ProfileSelector({ image, setImage }) {
           </button>
         </div>
       ) : (
+        // If image is selected, show preview with remove button
         <div className="relative">
           <img
             src={previewUrl}

@@ -1,19 +1,42 @@
+// React core and hooks
 import React, { useContext, useEffect, useState, useCallback } from "react";
+
+// Authentication hook
 import { useUserAuth } from "../../hooks/useUserAuth";
+
+// User context
 import { UserContext } from "../../context/userContext";
+
+// Layouts
 import DashboardLayout from "../../components/layouts/DashboardLayout";
+
+// Routing
 import { useNavigate } from "react-router-dom";
+
+// HTTP client
 import axiosInstance from "../../utils/axiosInstance"; // Custom Axios instance
 import { API_PATHS } from "../../utils/apiPaths"; // API endpoint paths
+
+// Notifications / alerts
 import Swal from "sweetalert2"; // SweetAlert2 for nice alerts
+
+// Date handling
 import moment from "moment-jalaali"; // Moment.js with Jalaali calendar
 import "moment/locale/fa"; // Set Persian locale
+
+// UI components
 import InfoCard from "../../components/Cards/InfoCard";
-import { addThousandsSeparator, toPersianDigits } from "../../utils/helper";
-import { LuArrowLeft, LuArrowRight } from "react-icons/lu";
 import TaskListTable from "../../components/TaskListTable";
+
+// Charts
 import CustomPieChart from "../../components/Charts/CustomPieChart";
 import CustomeBarChart from "../../components/Charts/CustomeBarChart";
+
+// Utilities
+import { addThousandsSeparator, toPersianDigits } from "../../utils/helper";
+
+// Icons
+import { LuArrowLeft, LuArrowRight } from "react-icons/lu";
 
 const DashBoard = () => {
   // Ensure user is authenticated
@@ -92,7 +115,6 @@ const DashBoard = () => {
       if (response?.data) {
         setDashboardData(response.data);
         prepareChartData(response.data?.charts || null);
-        console.log("Dashboard data:", response.data);
       }
     } catch (err) {
       console.error("Error fetching dashboard data:", err);
@@ -208,7 +230,7 @@ const DashBoard = () => {
               </div>
             </div>
 
-            <div className="md:col-span-2">
+            <div className="md:col-span-2 mb-8">
               <div className="card">
                 <div className="flex items-center justify-between">
                   <h5 className="text-lg">آخرین وظایف</h5>

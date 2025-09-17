@@ -1,3 +1,6 @@
+// helpers/dateHelpers.js
+import moment from "moment-jalaali";
+
 // validateEmail function for common real-world email addresses
 export const validateEmail = (email) => {
   // Basic pattern: something@something.something (letters, numbers, dots, dashes allowed)
@@ -37,3 +40,64 @@ export const toPersianDigits = (num) => {
   const persianDigits = "۰۱۲۳۴۵۶۷۸۹";
   return num.toString().replace(/\d/g, (d) => persianDigits[d]);
 };
+
+
+
+  // 1) If value is DateObject from react-multi-date-picker (has .format)
+  if (typeof value === "object" && typeof value.format === "function") {
+    // format in its calendar (persian), e.g. "1404/06/20"
+    const jalaliStr = value.format("YYYY/MM/DD");
+    const normalized = persianToEnglishDigits(jalaliStr);
+    const m = moment(normalized, "jYYYY/jMM/jDD");
+    if (!m.isValid()) return null;
+    return m.format("YYYY-MM-DD"); // date-only (no time)
+  }
+
+  // 2) If it's a string like "1404/06/20" (possibly with persian digits)
+  if (typeof value === "string") {
+    const normalized = persianToEnglishDigits(value);
+    const m = moment(normalized, "jYYYY/jMM/jDD");
+    if (!m.isValid()) return null;
+    return m.format("YYYY-MM-DD");
+  }
+
+  // 3) If it's already a JS Date -> convert to YYYY-MM-DD (local)
+  if (value instanceof Date) {
+    return moment(value).format("YYYY-MM-DD");
+  }
+
+  return null;
+}
+
+/**
+ * Convert backend Gregorian date (either "YYYY-MM-DD" or ISO datetime)
+ * into Persian display string like "۲۰ شهریور ۱۴۰۴" (with locale fa & jalaali).
+ *
+ * - If backend sends "YYYY-MM-DD" (recommended for date-only), it will be parsed as a plain date (no timezone shift).
+ * - If backend sends ISO datetime, we parse as UTC then convert to local to avoid day shift.
+ */
+export function gregorianToJalaliDisplay(
+  dateFromBackend,
+  { withWeekday = false } = {}
+) {
+  if (!dateFromBackend) return "بدون تاریخ";
+
+  // detect date-only "YYYY-MM-DD"
+  const isDateOnly = /^\d{4}-\d{2}-\d{2}$/.test(dateFromBackend);
+
+  let m;
+  if (isDateOnly) {
+    // parse as local date-only (no timezone conversion)
+    m = moment(dateFromBackend, "YYYY-MM-DD");
+  } else {
+    // parse ISO datetime as UTC then convert to local
+    m = moment.utc(dateFromBackend).local();
+  }
+
+  if (!m.isValid()) return "بدون تاریخ";
+
+  // format in jalali with persian locale - ensure you've called:
+  // moment.loadPersian({ dialect: "persian-modern", usePersianDigits: true });
+  const fmt = withWeekday ? "dddd، jD jMMMM jYYYY" : "jD jMMMM jYYYY";
+  return m.locale("fa").format(fmt);
+}

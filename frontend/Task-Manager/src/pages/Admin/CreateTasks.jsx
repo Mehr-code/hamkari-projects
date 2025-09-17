@@ -1,20 +1,50 @@
+// React core
 import React, { useState } from "react";
+
+// Layouts
 import DashboardLayout from "../../components/layouts/DashboardLayout";
+
+// Data and constants
 import { PRIORITY_DATA } from "../../utils/data";
-import axiosInstance from "../../utils/axiosInstance";
 import { API_PATHS } from "../../utils/apiPaths";
+
+// HTTP client
+import axiosInstance from "../../utils/axiosInstance";
+
+// Notifications
 import toast from "react-hot-toast";
+
+// Routing
 import { useLocation, useNavigate } from "react-router-dom";
+
+// Date handling
 import moment from "moment-jalaali"; // Moment.js with Jalaali calendar support
 import "moment/locale/fa"; // Persian locale for Moment.js
-import { LuTrash2 } from "react-icons/lu";
+moment.loadPersian({ dialect: "persian-modern" });
+
+// Icons
+import { LuTrash2, LuCalendar } from "react-icons/lu";
+
+// Form inputs
 import SelectDropdown from "../../components/Inputs/SelectDropdown";
 import SelectUsers from "../../components/Inputs/SelectUsers";
+import TodoListInput from "../../components/Inputs/TodoListInput";
+import AddAttachmentsInput from "../../components/Inputs/AddAtachttmentsInput";
 
+// Date picker
 import DatePicker, { Calendar } from "react-multi-date-picker";
-import persian from "react-date-object/calendars/persian";
-import persian_fa from "react-date-object/locales/persian_fa";
-import { LuCalendar } from "react-icons/lu";
+import persian from "react-date-object/calendars/persian"; // Persian calendar
+import persian_fa from "react-date-object/locales/persian_fa"; // Persian locale for the date picker
+
+function toEnglishDigits(str) {
+  return str.replace(/[۰-۹]/g, (d) => "۰۱۲۳۴۵۶۷۸۹".indexOf(d));
+}
+
+function jalaliToGregorian(jalaliDate) {
+  // اول مطمئن شو اعداد انگلیسی هستند
+  const normalized = toEnglishDigits(String(jalaliDate));
+  return moment(normalized, "jYYYY/jMM/jDD").format("YYYY-MM-DD");
+}
 
 const CreateTasks = () => {
   const location = useLocation();
@@ -54,7 +84,7 @@ const CreateTasks = () => {
     setTaskData({
       title: "",
       description: "",
-      priority: "Low",
+      priority: "",
       dueDate: null,
       assignedTo: [],
       todoChecklist: [],
@@ -63,7 +93,40 @@ const CreateTasks = () => {
   };
 
   // API call to create a new task
-  const createTask = async () => {};
+  const createTask = async () => {
+    setLoading(true);
+
+    try {
+      const todoList = taskData.todoChecklist?.map((item) => ({
+        text: item,
+        completed: false,
+      }));
+
+      let gregorianDate = null;
+      if (taskData.dueDate) {
+        const jalaliStr =
+          typeof taskData.dueDate === "string"
+            ? taskData.dueDate
+            : taskData.dueDate.format("jYYYY/jMM/jDD");
+
+        gregorianDate = jalaliToGregorian(jalaliStr);
+      }
+
+      const response = await axiosInstance.post(API_PATHS.TASKS.CREATE_TASK, {
+        ...taskData,
+        dueDate: gregorianDate,
+        todoCheckList: todoList,
+      });
+
+      toast.success("وظیفه مورد نظر با موفقیت ایجاد شد.");
+      clearData();
+    } catch (err) {
+      console.error("خطا هنگام ایجاد وظیفه", err);
+      setLoading(false);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // API call to update an existing task
   const updateTask = async () => {};
@@ -72,7 +135,58 @@ const CreateTasks = () => {
   const DeleteTask = async () => {};
 
   // Form submit handler
-  const handleSubmit = async () => {};
+  const handleSubmit = async () => {
+    setError(null);
+
+    // Validate task title
+    if (!taskData.title.trim()) {
+      setError("عنوان تسک وارد نشده.");
+      setTimeout(() => setError(""), 4000);
+      return;
+    }
+
+    // Validate task description
+    if (!taskData.description.trim()) {
+      setError("هیچ توضیحاتی وارد نشده.");
+      setTimeout(() => setError(""), 4000);
+      return;
+    }
+
+    // Validate due date
+    if (!taskData.dueDate) {
+      setError("تاریخ سررسید انتخاب نشده.");
+      setTimeout(() => setError(""), 4000);
+      return;
+    }
+
+    // Validate assigned users
+    if (!taskData.assignedTo || taskData.assignedTo.length === 0) {
+      setError("وظیفه به کسی واگذار نشده.");
+      setTimeout(() => setError(""), 4000);
+      return;
+    }
+
+    // Validate todo checklist
+    if (!taskData.todoChecklist || taskData.todoChecklist.length === 0) {
+      setError("حداقل وارد کردن یک ریز وظیفه الزامی است.");
+      setTimeout(() => setError(""), 4000);
+      return;
+    }
+
+    // If taskId exists → update task
+    if (taskId) {
+      updateTask();
+      return;
+    }
+
+    // If priority is not set → set default value
+    if (!taskData?.priority) {
+      handleValueChange("priority", "Low");
+    }
+
+    // Create a new task
+    createTask();
+  };
 
   // Fetch task details by ID (when editing)
   const getTaskDetailsById = async () => {};
@@ -99,7 +213,6 @@ const CreateTasks = () => {
                 </button>
               )}
             </div>
-
             {/* Input field for the task title */}
             <div className="mt-4">
               <label className="text-xs font-medium text-slate-600">
@@ -108,19 +221,18 @@ const CreateTasks = () => {
               <input
                 type="text"
                 className="form-input"
-                placeholder="کشیدن DFD"
+                placeholder="کشیدن DFD..."
                 value={taskData.title}
                 onChange={(e) => handleValueChange("title", e.target.value)}
               />
             </div>
-
             {/* Textarea for task description */}
             <div className="mt-3">
               <label className="text-xs font-medium text-slate-600">
                 توضیحات
               </label>
               <textarea
-                placeholder="جزییات وظیفه"
+                placeholder="جزییات وظیفه..."
                 className="form-input"
                 rows={4}
                 value={taskData.description}
@@ -129,7 +241,6 @@ const CreateTasks = () => {
                 }
               ></textarea>
             </div>
-
             {/* Grid layout for task settings like priority, due date, and assigned users */}
             <div className="grid grid-cols-12 gap-4 mt-2">
               {/* Priority dropdown */}
@@ -141,7 +252,7 @@ const CreateTasks = () => {
                   options={PRIORITY_DATA}
                   value={taskData.priority}
                   onChange={(val) => handleValueChange("priority", val)}
-                  placeholder="انتخاب کنید"
+                  placeholder="میزان الویت"
                 />
               </div>
 
@@ -150,15 +261,13 @@ const CreateTasks = () => {
                 <label className="text-xs font-medium text-slate-600">
                   تاریخ سررسید
                 </label>
-                <div className="relative">
+                <div className="relative  ">
                   <DatePicker
                     value={taskData.dueDate}
-                    onChange={(date) =>
-                      handleValueChange("dueDate", date.format())
-                    }
+                    onChange={(date) => handleValueChange("dueDate", date)}
                     calendar={persian} // Use Persian calendar
                     locale={persian_fa} // Persian locale
-                    inputClass="form-input w-full pl-10 cursor-pointer"
+                    inputClass="date-input"
                     format="YYYY/MM/DD"
                     placeholder="انتخاب تاریخ"
                   />
@@ -172,7 +281,7 @@ const CreateTasks = () => {
               </div>
 
               {/* User assignment component */}
-              <div className="col-span-12 md:col-span-3">
+              <div className="col-span-12 md:col-span-4">
                 <label className="text-xs font-medium text-slate-600">
                   واگذاری به
                 </label>
@@ -184,10 +293,43 @@ const CreateTasks = () => {
                 />
               </div>
             </div>
+            {/* TODO Checklist */}
+            <div className="mt-3">
+              <label className="text-xs font-medium text-slate-600">
+                لیست ریز وظیفه ها
+              </label>
+              <TodoListInput
+                todoList={taskData?.todoChecklist || []}
+                setTodoList={(value) =>
+                  handleValueChange("todoChecklist", value)
+                }
+              />
+            </div>
+            {/* Attachment Files */}
+            <div className="mt-3">
+              <label className="text-xs font-medium text-slate-600">
+                اضافه کردن فایل های ضمیمه
+              </label>
+              <AddAttachmentsInput
+                attachments={taskData?.attachments}
+                setAttachment={(value) =>
+                  handleValueChange("attachments", value)
+                }
+              />
+            </div>
 
-            {/* Submit button centered at the bottom */}
-            <div className="col-span-12 flex justify-center items-center mt-4">
-              <button className="card-btn-fill">ثبت</button>
+            {/* ERROR */}
+            {error && (
+              <p className="text-red-600 font-semibold text-sm mt-5 animate-shake">
+                {error}
+              </p>
+            )}
+
+            {/*Submit button centered at the bottom */}
+            <div className="col-span-12 flex justify-center items-center mt-7">
+              <button className="add-btn" onClick={handleSubmit}>
+                {taskId ? "ثبت تغییرات" : "ایجاد وظیفه"}
+              </button>
             </div>
           </div>
         </div>

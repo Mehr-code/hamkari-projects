@@ -13,7 +13,7 @@ import PrivateRoute from "./routes/PrivateRoute";
 import Dashboard from "./pages/Admin/Dashboard";
 import ManageTasks from "./pages/Admin/ManageTasks";
 import CreateTask from "./pages/Admin/CreateTasks";
-import ManageUsers from "./pages/Admin/ManageUsers"; // ✅ fixed typo in import path
+import ManageUsers from "./pages/Admin/ManageUsers";
 
 import UserDashBoard from "./pages/User/UserDashBoard";
 import UserTasks from "./pages/User/UserTasks";
@@ -22,6 +22,7 @@ import ViewTaskDetail from "./pages/User/ViewTaskDetail";
 import { UserContext } from "./context/userContext";
 import UserProvider from "./context/userProvider";
 import React, { useContext } from "react";
+import { Toaster } from "react-hot-toast";
 
 const App = () => {
   return (
@@ -55,6 +56,17 @@ const App = () => {
           <Route path="/" element={<Root />} />
         </Routes>
       </Router>
+
+      {/* Global toaster configuration for react-hot-toast */}
+      <Toaster
+        toastOptions={{
+          className: "", // Custom class for additional styling
+          style: {
+            fontSize: "15px", // Default font size for all toasts
+          },
+          duration: 4000, // Default display duration (in ms)
+        }}
+      />
     </UserProvider>
   );
 };
