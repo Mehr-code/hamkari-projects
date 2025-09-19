@@ -31,7 +31,7 @@ export const SIDE_MENU_DATA = [
     id: "04",
     label: "اعضای تیم",
     icon: LuUsers,
-    path: "/admin/users",
+    path: "/admin/manage-users",
   },
   {
     id: "05",

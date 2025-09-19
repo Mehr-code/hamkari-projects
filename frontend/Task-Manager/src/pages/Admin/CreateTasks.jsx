@@ -134,7 +134,53 @@ const CreateTasks = () => {
   };
 
   // API call to update an existing task
-  const updateTask = async () => {};
+  const updateTask = async () => {
+    setLoading(true);
+
+    try {
+      console.log(taskData);
+      const todolist = taskData.todoChecklist?.map((item) => {
+        const prevTodoChecklist = currentTask?.todoCheckList || null;
+        const matchedTask = prevTodoChecklist.find(
+          (task) => task.text === item
+        );
+
+        return {
+          text: item,
+          completed: matchedTask ? matchedTask.completed : false,
+        };
+      });
+
+      let gregorianDate = null;
+      if (taskData.dueDate) {
+        const jalaliStr =
+          typeof taskData.dueDate === "string"
+            ? taskData.dueDate
+            : taskData.dueDate.format("jYYYY/jMM/jDD");
+
+        gregorianDate = jalaliToGregorian(jalaliStr);
+      }
+
+      const response = await axiosInstance.put(
+        API_PATHS.TASKS.UPDATE_TASK(taskId),
+        {
+          ...taskData,
+          // dueDate: new Date(taskData.dueDate).toISOString(),
+          dueDate: gregorianDate,
+          todoCheckList: todolist,
+        }
+      );
+      toast.success("وظیفه با موفقیت بروزرسانی شد.");
+      setTimeout(() => {
+        navigate("/admin/tasks");
+      }, 2000);
+    } catch (err) {
+      console.error("خطا هنگام ویرایش وظیفه", err);
+      setLoading(false);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // API call to delete an existing task
   const DeleteTask = async () => {};
@@ -226,7 +272,7 @@ const CreateTasks = () => {
             : null,
           assignedTo: taskInfo.assignedTo?.map((member) => member?._id) || null,
           todoChecklist:
-            taskInfo.todoChecklist?.map((task) => task?.text) || null,
+            taskInfo.todoCheckList?.map((task) => task?.text) || null,
           attachments: taskInfo?.attachments || [],
         }));
       }
@@ -243,7 +289,45 @@ const CreateTasks = () => {
     }
   }, [taskId]);
 
-  const deleteTask = async () => {};
+  const deleteTask = async () => {
+    const result = await Swal.fire({
+      title: "وظیفه مورد نظر حذف شود؟",
+      text: "این کار غیرقابل بازگشت است!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "بله، حذف کن",
+      cancelButtonText: "انصراف",
+      reverseButtons: true,
+      confirmButtonColor: "#1368ec", // Primary project color
+      cancelButtonColor: "#64748b", // Gray color for cancel button
+      background: "#fcfbfc", // Background matching project
+      color: "#1e293b", // Text color
+      customClass: {
+        actions: "swal-actions", // کلاس سفارشی برای container دکمه‌ها
+      },
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await axiosInstance.delete(API_PATHS.TASKS.DELETE_TASK(taskId));
+
+        toast.success("وظیفه مورد نظر با موفقیت حذف شد.");
+        setTimeout(() => {
+          navigate("/admin/tasks");
+        }, 2000);
+      } catch (err) {
+        Swal.fire({
+          icon: "error",
+          title: "خطا!",
+          text: "خطا هنگام حذف وظیفه",
+        });
+        console.error(
+          "خطا هنگام حذف وظیفه",
+          err.response?.data?.message || err.message
+        );
+      }
+    }
+  };
 
   useEffect(() => {
     if (taskId) {
@@ -266,7 +350,7 @@ const CreateTasks = () => {
               {taskId && (
                 <button
                   className="flex items-center gap-1.5 text-[13px] font-medium text-rose-500 bg-rose-50 rounded px-2 py-1 border-rose-100 hover:border-rose-300 cursor-pointer"
-                  onClick={() => setOpenDeleteAlert(true)}
+                  onClick={() => deleteTask()}
                 >
                   حذف
                   <LuTrash2 className="text-base" />

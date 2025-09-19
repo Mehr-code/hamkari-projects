@@ -7,18 +7,49 @@ import { API_PATHS } from "../../utils/apiPaths";
 // Notifications / alerts
 import Swal from "sweetalert2"; // SweetAlert2 for nice alerts
 
+// Notifications
+import toast from "react-hot-toast";
+
 // Authentication hook
 import { useUserAuth } from "../../hooks/useUserAuth";
 
 // User context
 import { UserContext } from "../../context/userContext";
+
 import { LuFileSpreadsheet } from "react-icons/lu";
 
 import TaskStatusTabs from "../../components/TaskStatusTabs";
 import TaskCard from "../../components/Cards/TaskCard";
 
-// Dummy function for downloading report (not implemented yet)
-const handleDownloadReport = () => {};
+// Dummy function for downloading report
+const handleDownloadReport = async () => {
+  try {
+    const response = await axiosInstance.get(API_PATHS.REPORTS.EXPORT_TASKS, {
+      responseType: "blob",
+    });
+    // 2. Create a temporary URL object for the blob data
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+
+    // 3. Create a hidden <a> element to trigger file download
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "گزارش وظایف.xlsx"); // Filename for the download
+
+    // 4. Append link to DOM and simulate a click
+    document.body.appendChild(link);
+    link.click();
+
+    // 5. Remove the temporary link element
+    link.parentNode.removeChild(link);
+
+    // 6. Revoke the blob URL to free memory
+    window.URL.revokeObjectURL(url);
+  } catch (err) {
+    // 7. Handle errors (log + user-friendly toast message)
+    console.error("خطا هنگام دانلود گزارش وظایف", err);
+    toast.error("عملیات دانلود گزارش تیم ناموفق بود. یک بار دیگر امتحان کنید.");
+  }
+};
 
 const ManageTasks = () => {
   // Ensure user is authenticated (redirects if not)
@@ -98,7 +129,7 @@ const ManageTasks = () => {
               className="flex lg:hidden download-btn"
               onClick={handleDownloadReport}
             >
-              دریافت PDF گزارش
+              دریافت گزارش وظایف
               <LuFileSpreadsheet />
             </button>
           </div>
@@ -115,7 +146,7 @@ const ManageTasks = () => {
                 className="hidden lg:flex download-btn"
                 onClick={handleDownloadReport}
               >
-                دریافت PDF گزارش
+                دریافت گزارش وظایف
                 <LuFileSpreadsheet className="text-lg" />
               </button>
             </div>

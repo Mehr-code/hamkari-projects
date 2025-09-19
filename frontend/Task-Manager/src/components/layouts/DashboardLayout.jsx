@@ -18,7 +18,7 @@ function DashboardLayout({ children, activeMenu }) {
             <SideMenu activeMenu={activeMenu} />
           </div>
           {/* Render the main content */}
-          <div className="grow mx-5">{children}</div>
+          <div className="grow mx-5 ">{children}</div>
         </div>
       )}
     </div>

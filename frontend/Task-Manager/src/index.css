@@ -89,3 +89,12 @@
 .download-btn {
   @apply items-center gap-3 text-xs md:text-[13px] text-lime-900 bg-lime-200 px-2 py-2 rounded-md border border-lime-400 hover:border-lime-600 cursor-pointer;
 }
+
+/* Style for Deleting Task in Editing mode (Sweetalert) */
+.swal-actions button {
+  @apply mx-10 /* فاصله افقی بین دکمه‌ها */;
+}
+
+.user-card {
+  @apply bg-white p-4 rounded-xl shadow-md shadow-gray-300 border-gray-400/50;
+}
