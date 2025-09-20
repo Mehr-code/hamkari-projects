@@ -452,7 +452,7 @@ const CreateTasks = () => {
             {/* Attachment Files */}
             <div className="mt-3">
               <label className="text-xs font-medium text-slate-600">
-                اضافه کردن فایل های ضمیمه
+                اضافه کردن لینک های ضمیمه
               </label>
               <AddAttachmentsInput
                 attachments={taskData?.attachments}

@@ -38,6 +38,9 @@ import { addThousandsSeparator, toPersianDigits } from "../../utils/helper";
 // Icons
 import { LuArrowLeft, LuArrowRight } from "react-icons/lu";
 
+// Configure moment-jalaali for Persian with Persian digits
+moment.loadPersian({ dialect: "persian-modern", usePersianDigits: true });
+
 const UserDashBoard = () => {
   // Ensure user is authenticated
   useUserAuth();
@@ -54,8 +57,6 @@ const UserDashBoard = () => {
   const [_, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Configure moment-jalaali for Persian with Persian digits
-  moment.loadPersian({ dialect: "persian-modern", usePersianDigits: true });
   const today = moment().format("dddd، jD jMMMM jYYYY");
   // Example output: سه‌شنبه، ۲۰ شهریور ۱۴۰۴
 
@@ -72,7 +73,7 @@ const UserDashBoard = () => {
    * @param {Object} data - Raw stats data from backend
    */
   const prepareChartData = (data) => {
-    const taskDistriution = data?.taskDistriution || null;
+    const taskDistriution = data?.taskDistribution || null;
     const taskPriorityLevels = data?.taskPriorityLevels || null;
 
     const taskDistriutionData = [
@@ -143,7 +144,7 @@ const UserDashBoard = () => {
   };
 
   return (
-    <DashboardLayout activeMenu="/admin/dashboard">
+    <DashboardLayout activeMenu="/user/dashboard">
       {/* Display error if exists */}
       {error && <p className="text-red-500">{error}</p>}
 
@@ -169,7 +170,7 @@ const UserDashBoard = () => {
                 label="همه ی وظایف"
                 value={toPersianDigits(
                   addThousandsSeparator(
-                    dashboardData?.charts?.taskDistriution?.All || 0
+                    dashboardData?.charts?.taskDistribution?.All || 0
                   )
                 )}
                 color="bg-primary"
@@ -178,7 +179,7 @@ const UserDashBoard = () => {
                 label="وظایف بدون شروع"
                 value={toPersianDigits(
                   addThousandsSeparator(
-                    dashboardData?.charts?.taskDistriution?.Pending || 0
+                    dashboardData?.charts?.taskDistribution?.Pending || 0
                   )
                 )}
                 color="bg-violet-500"
@@ -187,7 +188,7 @@ const UserDashBoard = () => {
                 label="وظایف در حال پیشرفت"
                 value={toPersianDigits(
                   addThousandsSeparator(
-                    dashboardData?.charts?.taskDistriution?.InProgress || 0
+                    dashboardData?.charts?.taskDistribution?.InProgress || 0
                   )
                 )}
                 color="bg-cyan-500"
@@ -196,7 +197,7 @@ const UserDashBoard = () => {
                 label="وظایف تکمیل شده"
                 value={toPersianDigits(
                   addThousandsSeparator(
-                    dashboardData?.charts?.taskDistriution?.Completed || 0
+                    dashboardData?.charts?.taskDistribution?.Completed || 0
                   )
                 )}
                 color="bg-lime-500"

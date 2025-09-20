@@ -38,6 +38,9 @@ import { addThousandsSeparator, toPersianDigits } from "../../utils/helper";
 // Icons
 import { LuArrowLeft, LuArrowRight } from "react-icons/lu";
 
+// Configure moment-jalaali for Persian with Persian digits
+moment.loadPersian({ dialect: "persian-modern", usePersianDigits: true });
+
 const DashBoard = () => {
   // Ensure user is authenticated
   useUserAuth();
@@ -54,8 +57,6 @@ const DashBoard = () => {
   const [_, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Configure moment-jalaali for Persian with Persian digits
-  moment.loadPersian({ dialect: "persian-modern", usePersianDigits: true });
   const today = moment().format("dddd، jD jMMMM jYYYY");
   // Example output: سه‌شنبه، ۲۰ شهریور ۱۴۰۴
 

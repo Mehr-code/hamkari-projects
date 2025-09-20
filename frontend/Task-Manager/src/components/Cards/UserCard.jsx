@@ -74,7 +74,7 @@ const StatCard = ({ label, count, status, icon }) => {
       case "In Progress":
         return "bg-cyan-50 text-cyan-600 border-l-4 border-cyan-400";
       case "Completed":
-        return "bg-green-50 text-green-600 border-l-4 border-green-400";
+        return "bg-lime-50 text-lime-600 border-l-4 border-lime-400";
       default:
         return "bg-gray-50 text-gray-600 border-l-4 border-gray-400";
     }

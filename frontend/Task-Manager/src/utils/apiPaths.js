@@ -24,7 +24,7 @@ export const API_PATHS = {
     UPDATE_TASK: (taskId) => `/api/tasks/${taskId}`, // Update task details
     DELETE_TASK: (taskId) => `/api/tasks/${taskId}`, // Delete a task (Admin only)
     UPDATE_TASK_STATUS: (taskId) => `/api/tasks/${taskId}/status`, // Update task status
-    UPDATE_TODO_CHECKLIST: (taskId) => `/api/tasks/${taskId}/todo`, // Update todo checklist of a task
+    UPDATE_TODO_CHECKLIST: (taskId) => `/api/tasks/${taskId}/checklist`, // Update todo checklist of a task
   },
   REPORTS: {
     EXPORT_TASKS: "/api/report/export/tasks", // Export all tasks in Excel format

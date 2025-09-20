@@ -359,9 +359,16 @@ const getUserDashboardData = async (req, res) => {
       },
     ]);
 
+    // const taskDistribution = taskStatuses.reduce((acc, status) => {
+    //   const formattedKey = status.replace(/\s+/g, "");
+    //   acc[formattedKey] =
+    //     taskDistributionRaw.find((item) => item._id === status)?.count || 0;
+    //   return acc;
+    // }, {});
+    // taskDistribution["All"] = totalTasks;
+
     const taskDistribution = taskStatuses.reduce((acc, status) => {
-      const formattedKey = status.replace(/\s+/g, "");
-      acc[formattedKey] =
+      acc[status] =
         taskDistributionRaw.find((item) => item._id === status)?.count || 0;
       return acc;
     }, {});
@@ -371,7 +378,7 @@ const getUserDashboardData = async (req, res) => {
     const taskPriorities = ["Low", "Medium", "High"];
     const taskPriorityLevelsRaw = await Task.aggregate([
       { $match: { assignedTo: userId } },
-      { $group: { _id: "priority", count: { $sum: 1 } } },
+      { $group: { _id: "$priority", count: { $sum: 1 } } },
     ]);
 
     const taskPriorityLevels = taskPriorities.reduce((acc, priority) => {

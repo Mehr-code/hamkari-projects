@@ -5,7 +5,10 @@ import { UserContext } from "./userContext";
 
 const UserProvider = ({ children }) => {
   // State to store the current logged-in user
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    const token = localStorage.getItem("Mehr_token");
+    return token ? { token } : null;
+  });
 
   // State to track whether we're still loading user data
   const [loading, setLoading] = useState(true);
@@ -53,6 +56,9 @@ const UserProvider = ({ children }) => {
   const updateUser = (userData) => {
     setUser(userData);
     localStorage.setItem("Mehr_token", userData.token);
+    axiosInstance.defaults.headers.common[
+      "Authorization"
+    ] = `Bearer ${userData.token}`;
     setLoading(false);
   };
 
@@ -60,6 +66,7 @@ const UserProvider = ({ children }) => {
   const clearUser = () => {
     setUser(null);
     localStorage.removeItem("Mehr_token");
+    delete axiosInstance.defaults.headers.common["Authorization"];
   };
 
   // Provide user state, loading state, and helper functions to the app
