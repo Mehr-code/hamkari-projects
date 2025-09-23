@@ -47,8 +47,8 @@
 
 1. کلون کردن پروژه:
 ```bash
-git clone https://github.com/username/task-manager.git
-cd task-manager
+git clone https://github.com/Mehr-code/hamkari-projects.git
+cd hamkari-projects
 ```
 
 2. نصب وابستگی‌ها:
